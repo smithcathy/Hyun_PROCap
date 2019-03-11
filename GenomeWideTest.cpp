@@ -9,12 +9,15 @@ void RawReads(IntegerVector& chr, IntegerVector& startSite, IntegerVector& forwa
               IntegerMatrix& rawReads, double& forLambda, double& revLambda, const unsigned int chromosome, 
               unsigned int& index, const unsigned int size){
   fill(rawReads.begin(),rawReads.end(),0);
-  while (chr(index)==chromosome && index<size){
+  while (chr(index)==chromosome){
     rawReads(startSite(index),0)=forwardReads(index);
     rawReads(startSite(index),1)=revReads(index);
     forLambda+=forwardReads(index);
     revLambda+=revReads(index);
     index++;
+    if (index==(size-1)){
+      break;
+    }
   }
 }
 
@@ -35,7 +38,8 @@ void OptimDist(IntegerMatrix& rawReads, const int interval, NumericVector& reads
 
 // [[Rcpp::export]]
 List GenomeWideDist(IntegerVector& chr, IntegerVector& startSite, IntegerVector& forwardReads, IntegerVector& revReads,
-                    unsigned int interval, unsigned int maxChrLen, IntegerVector& chrUsed, IntegerVector& maxLenByChr){
+                    unsigned int interval, unsigned int maxChrLen, IntegerVector& chrUsed, IntegerVector& maxLenByChr,
+                    const unsigned int totalLen){
   int maxDist;
   double forLambda, revLambda;
   unsigned int chrCount=chrUsed.size();
@@ -55,8 +59,8 @@ List GenomeWideDist(IntegerVector& chr, IntegerVector& startSite, IntegerVector&
       maxDist=i-interval;
     }
   }
-  forLambda=3000000000/forLambda;
-  revLambda=3000000000/revLambda;
+  forLambda=totalLen/forLambda;
+  revLambda=totalLen/revLambda;
   return List::create(Named("readsPerDistLog")=readsPerDistLog,
                       Named("readsPerDistSqrt")=readsPerDistSqrt,
                       Named("maxDist")=maxDist,

@@ -10,14 +10,17 @@ void BinReads(IntegerVector& chr, IntegerVector& startSite, IntegerVector& forwa
               const unsigned int chromosome,unsigned int& index, const unsigned int size){
   unsigned int binNumber=binnedReads.nrow();
   fill(binnedReads.begin(),binnedReads.end(),0);
-  int binIndex;
-  while(chr(index)==chromosome && index<size){
+  unsigned int binIndex;
+  while(chr(index)==chromosome){
     binIndex=floor(startSite(index)/binSize);
     binnedReads(binIndex,0)+=forwardReads(index);
     binnedReads(binIndex,1)+=revReads(index);
     forLambda+=forwardReads(index);;
     revLambda+=revReads(index);
     index++;
+    if (index==size-1){
+      break;
+    }
   }
 }
 
@@ -39,7 +42,7 @@ void OptimDist(IntegerMatrix& rawReads, const int interval, NumericVector& reads
 // [[Rcpp::export]]
 List GenomeWideDistBin(IntegerVector& chr, IntegerVector& startSite, IntegerVector& forwardReads, IntegerVector& revReads,
                     unsigned int interval, unsigned int maxChrLen, IntegerVector& chrUsed, IntegerVector& maxLenByChr,
-                    const int binSize){
+                    const int binSize, const int totalLen){
   int maxDist;
   double forLambda, revLambda;
   unsigned int chrCount=chrUsed.size();
@@ -50,7 +53,6 @@ List GenomeWideDistBin(IntegerVector& chr, IntegerVector& startSite, IntegerVect
   for (unsigned int i=0; i<chrCount; i++){
     BinReads(chr,startSite,forwardReads,revReads,binSize,binnedReads,forLambda,revLambda,chrUsed(i),index,size);
     OptimDist(binnedReads, interval, readsPerDistLog, readsPerDistSqrt, ceil(maxLenByChr(i)/binSize));
-    cout << i << endl;
   }
   double maxValue=0;
   for (unsigned int i=0; i<interval*2; i++){
@@ -59,8 +61,8 @@ List GenomeWideDistBin(IntegerVector& chr, IntegerVector& startSite, IntegerVect
       maxDist=i-interval;
     }
   }
-  forLambda=ceil(3000000000.0/binSize)/forLambda;
-  revLambda=ceil(3000000000.0/binSize)/revLambda;
+  forLambda=ceil((double)totalLen/binSize)/forLambda;
+  revLambda=ceil((double)totalLen/binSize)/revLambda;
   return List::create(Named("readsPerDistLog")=readsPerDistLog,
                       Named("readsPerDistSqrt")=readsPerDistSqrt,
                       Named("maxDist")=maxDist,

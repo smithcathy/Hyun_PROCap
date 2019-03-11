@@ -6,6 +6,7 @@ args=as.numeric(commandArgs(trailingOnly = T))
 #args[1] is interval
 
 data=read.table(file("stdin"), stringsAsFactors = F)
+data=select(data,V1,V2,V5,V7)
 data=filter(data, V1 %in% c(1:22,"X","Y"))
 data=data %>% mutate(V1=replace(V1, V1=="X", "23"))
 data=data %>% mutate(V1=replace(V1, V1=="Y", "24"))
@@ -13,11 +14,12 @@ data$V1=as.numeric(data$V1)
 str(data)
 chrUsed=unique(data$V1)
 maxLengthByChr=aggregate(data$V2,by=list(data$V1),max)$x
+totalLength=sum(as.numeric(maxLengthByChr))
 maxChrLength=max(data$V2)
 
 sourceCpp("GenomeWideTest.cpp")
 print("cpp file loaded!")
-r=GenomeWideDist(data$V1,data$V2, data$V5, data$V7,args[1],maxChrLength,chrUsed,maxLengthByChr)
+r=GenomeWideDist(data$V1,data$V2, data$V5, data$V7,args[1],maxChrLength,chrUsed,maxLengthByChr, totalLength)
 print("exited cpp")
 print(r$maxDist)
 print(r$forLambda)
