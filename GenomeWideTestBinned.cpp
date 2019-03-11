@@ -11,16 +11,13 @@ void BinReads(IntegerVector& chr, IntegerVector& startSite, IntegerVector& forwa
   unsigned int binNumber=binnedReads.nrow();
   fill(binnedReads.begin(),binnedReads.end(),0);
   unsigned int binIndex;
-  while(chr(index)==chromosome){
+  while(index<size && chr(index)==chromosome){
     binIndex=floor(startSite(index)/binSize);
     binnedReads(binIndex,0)+=forwardReads(index);
     binnedReads(binIndex,1)+=revReads(index);
     forLambda+=forwardReads(index);;
     revLambda+=revReads(index);
     index++;
-    if (index==size-1){
-      break;
-    }
   }
 }
 

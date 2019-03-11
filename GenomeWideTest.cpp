@@ -9,15 +9,12 @@ void RawReads(IntegerVector& chr, IntegerVector& startSite, IntegerVector& forwa
               IntegerMatrix& rawReads, double& forLambda, double& revLambda, const unsigned int chromosome, 
               unsigned int& index, const unsigned int size){
   fill(rawReads.begin(),rawReads.end(),0);
-  while (chr(index)==chromosome){
+  while (index<size && chr(index)==chromosome){
     rawReads(startSite(index),0)=forwardReads(index);
     rawReads(startSite(index),1)=revReads(index);
     forLambda+=forwardReads(index);
     revLambda+=revReads(index);
     index++;
-    if (index==(size-1)){
-      break;
-    }
   }
 }
 
